@@ -120,19 +120,17 @@ extern "system" fn window_proc(
 
 #[cfg(windows)]
 fn main() {
-    match register_window_class("win32-window") {
-        Err(_) => panic!("register_window_class() failed"),
-        Ok(_) => ()
+    unsafe {
+        if winuser::SetProcessDPIAware() == minwindef::FALSE {
+            return
+        }
     }
 
-    let hwnd = create_window("win32-window", "Win32Window");
+    register_window_class("win32-window")
+        .expect("register_window_class() failed");
 
-    match hwnd {
-        Err(_) => panic!("create_window() failed"),
-        Ok(_) => ()
-    }
-
-    let hwnd = hwnd.unwrap();
+    let hwnd = create_window("win32-window", "Win32Window")
+        .expect("create_window() failed");
 
     loop {
         if !handle_message(hwnd) {
